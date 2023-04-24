@@ -86,7 +86,7 @@ function ValveCmdAccessoryMqtt(log, config) {
   this.log = log;
   this.name = config.name;
 
-  this.adresseIp = config.adresseIp;
+  this.module = config.module;
   this.relais = config.relais;
   this.indice = config.indice;
   this.dureeDemandee = config.dureeDemandee || 0;
@@ -97,6 +97,7 @@ function ValveCmdAccessoryMqtt(log, config) {
   this.capteurValveOuvert = false;
   this.capteurValveEnDefaut = false;
   this.modeManuel = false;
+  this.dureeRestante = 0;
 
   this.debug = config.debug || 0;
 
@@ -126,7 +127,7 @@ function ValveCmdAccessoryMqtt(log, config) {
   this.client.on('connect', this.mqttGererConnexion.bind(this));
   this.client.on('message', this.mqttGererMessage.bind(this));
 
-  this.mqttTopicEtatVanne = "NetworkModule/" + config.module + "/input/0" + config.relais;
+  this.mqttTopicEtatVanne = "NetworkModule/" + config.module + "/output/0" + config.relais;
   this.mqttTopicCommandeVanne  = "NetworkModule/" + config.module + "/output/0" + config.relais + "/set";
 
   this.client.subscribe(this.mqttTopicEtatVanne);
@@ -173,6 +174,12 @@ ValveCmdAccessoryMqtt.prototype.setActive = function(estActive, callback, contex
     }
     accessory.log('Appel de setActive : etatValveDemande = INACTIVE');
   }
+
+  if (accessory.stateTimer) {
+     clearTimeout(this.stateTimer);
+     accessory.stateTimer = null;
+  }
+  accessory.stateTimer = setImmediate(accessory.GererEtat.bind(accessory));
 
   callback();
   return true;
@@ -245,6 +252,12 @@ ValveCmdAccessoryMqtt.prototype.getStatusFault = function(callback) {
   callback(null, accessory.etatEnDefaut);
 }
 
+ValveCmdAccessoryMqtt.prototype.mqttGererErreur = function() {
+  var accessory = this;
+
+  accessory.log("Erreur Mqtt");
+}
+
 ValveCmdAccessoryMqtt.prototype.mqttGererConnexion = function(topic, message) {
   var accessory = this;
 
@@ -268,13 +281,13 @@ ValveCmdAccessoryMqtt.prototype.mqttGererMessage = function(topic, message) {
   messageRecu = false;
 
   switch(topic) {
-    case accessory.MqttTopicEtatVanne :
+    case accessory.mqttTopicEtatVanne :
       switch(status) {
         case 'ON' :
           accessory.capteurValveOuvert = true;
           accessory.capteurValveEnDefaut = false;
           if(accessory.debug) {
-            accessory.log('Réception Mqtt, état d''ouverture de la vanne de ' + accessory.name + ' est : vrai ');
+            accessory.log('Réception Mqtt, état d\'ouverture de la vanne de ' + accessory.name + ' est : vrai ');
           }
           messageRecu = true;
           break;
@@ -282,7 +295,7 @@ ValveCmdAccessoryMqtt.prototype.mqttGererMessage = function(topic, message) {
           accessory.capteurValveOuvert = false;
           accessory.capteurValveEnDefaut = false;
           if(accessory.debug) {
-            accessory.log('Réception Mqtt, état d''ouverture de la vanne de ' + accessory.name + ' est : faux ');
+            accessory.log('Réception Mqtt, état d\'ouverture de la vanne de ' + accessory.name + ' est : faux ');
           }
           messageRecu = true;
         break;
@@ -296,7 +309,7 @@ ValveCmdAccessoryMqtt.prototype.mqttGererMessage = function(topic, message) {
        clearTimeout(this.stateTimer);
        accessory.stateTimer = null;
     }
-    accessory.stateTimer = setImmediate(accessory.gererEtat.bind(accessory));
+    accessory.stateTimer = setImmediate(accessory.GererEtat.bind(accessory));
   }
 }
 
@@ -388,19 +401,20 @@ ValveCmdAccessoryMqtt.prototype.GererEtat = function() {
       accessory.log("Fin du délai d'arrosage");
       accessory.log("Etat demande de " + accessory.name + " est : INACTIVE");
       accessory.valveService.getCharacteristic(Characteristic.Active).setValue(Characteristic.Active.INACTIVE);
+    } else {
+      // si le delai n'est pas termine, relance de la fontion GererEtat dans une seconde
+      // Clear any existing timer
+      if (accessory.stateTimer) {
+        clearTimeout(accessory.stateTimer);
+        accessory.stateTimer = null;
+      }
+      accessory.stateTimer = setTimeout(this.GererEtat.bind(this),(accessory.intervalLecture) * 1000);
     }
   }
 
   if(valveChange) {
-    accessory.client.publish(accessory.MqttTopicCommandeVanne, commande, { qos: 0 });
+    accessory.client.publish(accessory.mqttTopicCommandeVanne, commande, { qos: 0 });
   }
-
-  // Clear any existing timer
-  if (accessory.stateTimer) {
-    clearTimeout(accessory.stateTimer);
-    accessory.stateTimer = null;
-  }
-  accessory.stateTimer = setTimeout(this.GererEtat.bind(this),(accessory.intervalLecture) * 1000);
 }
 
 ValveCmdAccessoryMqtt.prototype.getServices = function() {
@@ -442,7 +456,7 @@ ValveCmdAccessoryMqtt.prototype.getServices = function() {
   .on('get', this.getStatusFault.bind(this))
   .updateValue(this.etatValveEnDefaut);
 
-  this.stateTimer = setTimeout(this.QueryState.bind(this),this.intervalLecture * 1000);
+  this.stateTimer = setTimeout(this.GererEtat.bind(this),this.intervalLecture * 1000);
 
   return [this.informationService, this.valveService];
 }
