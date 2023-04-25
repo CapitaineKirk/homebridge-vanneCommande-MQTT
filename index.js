@@ -87,9 +87,9 @@ function ValveCmdAccessoryMqtt(log, config) {
   this.name = config.name;
 
   this.module = config.module;
-  this.relais = config.relais;
+  this.port = config.port;
   this.indice = config.indice;
-  this.dureeDemandee = config.dureeDemandee || 0;
+  this.dureeDemandee = config.dureeDemandee || 900;
   this.intervalLecture = config.intervalLecture || 1;
   this.etatValveDemande = Characteristic.Active.INACTIVE; //Etat initial
   this.etatValveActuel = Characteristic.InUse.NOT_IN_USE; //Etat initial
@@ -127,8 +127,8 @@ function ValveCmdAccessoryMqtt(log, config) {
   this.client.on('connect', this.mqttGererConnexion.bind(this));
   this.client.on('message', this.mqttGererMessage.bind(this));
 
-  this.mqttTopicEtatVanne = "NetworkModule/" + config.module + "/output/0" + config.relais;
-  this.mqttTopicCommandeVanne  = "NetworkModule/" + config.module + "/output/0" + config.relais + "/set";
+  this.mqttTopicEtatVanne = "NetworkModule/" + config.module + "/output/0" + config.port;
+  this.mqttTopicCommandeVanne  = "NetworkModule/" + config.module + "/output/0" + config.port + "/set";
   this.mqttTopicDisponibiliteVanne  = "NetworkModule/" + config.module + "/availability";
 
   this.client.subscribe(this.mqttTopicEtatVanne);
