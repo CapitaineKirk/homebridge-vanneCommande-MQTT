@@ -129,13 +129,16 @@ function ValveCmdAccessoryMqtt(log, config) {
 
   this.mqttTopicEtatVanne = "NetworkModule/" + config.module + "/output/0" + config.relais;
   this.mqttTopicCommandeVanne  = "NetworkModule/" + config.module + "/output/0" + config.relais + "/set";
+  this.mqttTopicDisponibiliteVanne  = "NetworkModule/" + config.module + "/availability";
 
   this.client.subscribe(this.mqttTopicEtatVanne);
   this.client.subscribe(this.mqttTopicCommandeVanne);
+  this.client.subscribe(this.mqttTopicDisponibiliteVanne);
 
   if(this.debug) {
      this.log("mqttTopicEtatVanne = " + this.mqttTopicEtatVanne);
      this.log("mqttTopicCommandeVanne = " + this.mqttTopicCommandeVanne);
+     this.log("mqttTopicDisponibiliteVanne = " + this.mqttTopicDisponibiliteVanne);
   }
 
   this.log('Fin ValveCmdAccessoryMqtt');
@@ -303,6 +306,24 @@ ValveCmdAccessoryMqtt.prototype.mqttGererMessage = function(topic, message) {
         break;
       }
     break;
+    case accessory.mqttTopicDisponibiliteVanne :
+      switch(status) {
+        case 'online' :
+          accessory.capteurValveEnDefaut = false;
+          if(accessory.debug) {
+            accessory.log('Réception Mqtt, état de disponibilite  de la vanne de ' + accessory.name + ' est : vrai ');
+          }
+          messageRecu = true;
+        break;
+        case 'offline' :
+          accessory.capteurValveEnDefaut = true;
+          if(accessory.debug) {
+            accessory.log('Réception Mqtt, état de disponibilite  de la vanne de ' + accessory.name + ' est : faux ');
+          }
+          messageRecu = true;
+        break;
+      }
+    break;
   }
   if(messageRecu) {
     if (accessory.stateTimer) {
@@ -349,7 +370,7 @@ ValveCmdAccessoryMqtt.prototype.GererEtat = function() {
       accessory.log("Etat defaut de " + accessory.name + " est : NO_FAULT");
       accessory.etatValveEnDefaut = Characteristic.StatusFault.NO_FAULT;
     }
-    accessory.valveService.getCharacteristic(Characteristic.StatusFault).updateValue(this.etatValveEnDefaut);
+    accessory.valveService.getCharacteristic(Characteristic.StatusFault).updateValue(accessory.etatValveEnDefaut);
   }
 
   if(!accessory.capteurValveEnDefaut) {
