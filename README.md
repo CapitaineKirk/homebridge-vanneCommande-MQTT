@@ -1,6 +1,6 @@
-# homebridge-vanneCommande-MQTT
+# homebridge-vanneCommande-mqtt
 
-<img src="https://github.com/CapitaineKirk/homebridge-vanneCommande-MQTT/blob/main/photos/HW-584.jpg" width=150 align="right" />  
+<img src="https://github.com/CapitaineKirk/homebridge-vanneCommande-mqtt/blob/main/photos/HW-584.jpg" width=150 align="right" />  
 
 ## But
 
@@ -22,7 +22,7 @@ Merci à Michael Nielson (https://github.com/nielsonm236) pour son firmware alte
 ## Installation
 
 1. Installez [homebridge](https://github.com/nfarina/homebridge#installation-details)  
-2. Installez ce plugin: `npm install -g homebridge-VanneCommande-MQTT`  
+2. Installez ce plugin: `npm install -g homebridge-VanneCommande-mqtt`  
 3. Mettez à jour le fichier `config.json`  
 4. Configurez le module HW-584 (voir la doc sur le site de Michael)
 
@@ -31,7 +31,7 @@ Merci à Michael Nielson (https://github.com/nielsonm236) pour son firmware alte
 ```json
 "accessories": [
      {
-       "accessory": "VanneCommande-MQTT",
+       "accessory": "VanneCommande-mqtt",
        "name": "Lauriers",
        "module": "Module20",
        "port" : 1,
@@ -39,7 +39,7 @@ Merci à Michael Nielson (https://github.com/nielsonm236) pour son firmware alte
        "debug": 0
      },
      {
-       "accessory" : "SwitchCommande-MQTT",
+       "accessory" : "SwitchCommande-mqtt",
        "name" : "Arrosage Test",
        "indice" : 1,
        "debug": 0
@@ -51,7 +51,7 @@ Merci à Michael Nielson (https://github.com/nielsonm236) pour son firmware alte
 
 | Key | Description | Default |
 | --- | --- | --- |
-| `accessory` | Doit être `VanneCommande-MQTT` | N/A |  
+| `accessory` | Doit être `VanneCommande-mqtt` | N/A |  
 | `name` | Nom qui apparaîtra dans l'application Home | N/A |  
 | `module` | Nom déclaré dans la configuration du HW-584 | N/A |  
 | `port` | Numéro de la sortie connectée à la commande d'ouverture/fermeture de la vanne | N/A |  
@@ -63,7 +63,7 @@ Merci à Michael Nielson (https://github.com/nielsonm236) pour son firmware alte
 
 | Key | Description | Default |  
 | --- | --- | --- |  
-| `accessory` | Doit être `SwitchCommande-MQTT` | N/A |  
+| `accessory` | Doit être `SwitchCommande-mqtt` | N/A |  
 | `name` | Nom qui apparaîtra dans l'application Home | N/A |  
 | `indice` | Numéro permettant le lien avec la vanne | N/A  
 | `debug` | Active le mode verbeux | 0 |  
