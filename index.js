@@ -11,8 +11,8 @@ const date = require('date-and-time');
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
-  homebridge.registerAccessory('homebridge-vanneCommande-MQTT', 'VanneCommande-MQTT', ValveCmdAccessoryMqtt);
-  homebridge.registerAccessory('homebridge-switchCommande-MQTT', 'SwitchCommande-MQTT', SwitchCmdAccessoryMqtt);
+  homebridge.registerAccessory('homebridge-vanneCommande-mqtt', 'VanneCommande-mqtt', ValveCmdAccessoryMqtt);
+  homebridge.registerAccessory('homebridge-switchCommande-mqtt', 'SwitchCommande-mqtt', SwitchCmdAccessoryMqtt);
 };
 
 function SwitchCmdAccessoryMqtt(log, config) {
